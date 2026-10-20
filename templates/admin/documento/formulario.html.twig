@@ -1,0 +1,58 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ documento.id ? documento.titulo : 'Nuevo documento' }} - Semantica Docs{% endblock %}
+
+{% block contenido %}
+<div class="encabezado">
+    <div>
+        <a href="{{ path('admin_documento_lista') }}" class="volver">← Documentos</a>
+        <h1>{{ documento.id ? documento.titulo : 'Nuevo documento' }}</h1>
+        {% if documento.id %}
+            <div class="suave">
+                #{{ documento.id }} · {{ documento.proyecto.nombre }}{% if documento.seccion %} ⇾ {{ documento.seccion.ruta }}{% endif %}
+                · Actualizado {{ documento.fechaActualizacion|date('Y-m-d H:i') }}{% if documento.actualizadoPor %} por {{ documento.actualizadoPor.nombre }}{% endif %}
+            </div>
+        {% endif %}
+    </div>
+    {% if documento.id %}
+        <a href="{{ url_documento(documento.proyecto.slug, documento.id, documento.titulo) }}" class="btn btn-secundario">Ver en el visor</a>
+    {% endif %}
+</div>
+
+{{ form_start(form, {attr: {class: 'formulario-documento', novalidate: 'novalidate'}}) }}
+    {{ form_errors(form) }}
+    <div class="documento-layout">
+        <div class="documento-editor">
+            {{ form_row(form.titulo) }}
+            <div class="campo-form" data-controller="editor-markdown"
+                 data-editor-markdown-vista-previa-url-value="{{ path('admin_documento_vista_previa') }}">
+                {{ form_label(form.contenido) }}
+                {{ form_widget(form.contenido, {attr: {'data-editor-markdown-target': 'texto', rows: 25}}) }}
+                {{ form_errors(form.contenido) }}
+            </div>
+        </div>
+
+        <aside class="documento-propiedades">
+            <div class="panel" data-controller="seccion-por-proyecto">
+                <h2>Propiedades</h2>
+                {{ form_row(form.proyecto, {attr: {'data-seccion-por-proyecto-target': 'proyecto', 'data-action': 'seccion-por-proyecto#filtrar'}}) }}
+                {{ form_row(form.seccion, {attr: {'data-seccion-por-proyecto-target': 'seccion'}}) }}
+                {{ form_row(form.nombre) }}
+                {{ form_row(form.modelo) }}
+                {{ form_row(form.video) }}
+                {{ form_row(form.orden) }}
+                {{ form_row(form.publicado) }}
+            </div>
+            <button type="submit" class="btn btn-primario btn-bloque">Guardar</button>
+        </aside>
+    </div>
+{{ form_end(form) }}
+
+{% if documento.id %}
+    <form method="post" action="{{ path('admin_documento_eliminar', {id: documento.id}) }}" class="zona-eliminar"
+          onsubmit="return confirm('¿Eliminar este documento? No se puede deshacer.');">
+        <input type="hidden" name="_token" value="{{ csrf_token('eliminar-documento-' ~ documento.id) }}">
+        <button type="submit" class="btn btn-peligro btn-pequeno">Eliminar documento</button>
+    </form>
+{% endif %}
+{% endblock %}

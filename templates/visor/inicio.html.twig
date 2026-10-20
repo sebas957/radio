@@ -1,0 +1,36 @@
+{% extends 'visor/base.html.twig' %}
+{% import 'visor/_iconos.html.twig' as i %}
+
+{% block contenido %}
+<section class="portada">
+    <div class="portada-interior">
+        <div class="portada-etiqueta">Semantica Docs</div>
+        <h1>Documentación de nuestras soluciones</h1>
+        <p>Manuales, procesos y guías de los productos de Semantica Digital, en un solo lugar.</p>
+        <form action="{{ path('visor_buscar') }}" method="get" class="portada-buscar" role="search">
+            {{ i.icono('buscar') }}
+            <input type="search" name="q" placeholder="¿Qué necesita saber? Ej. crear una guía, facturación electrónica..." aria-label="Buscar en la documentación">
+            <button type="submit" class="btn btn-primario">Buscar</button>
+        </form>
+    </div>
+</section>
+
+<section class="contenedor">
+    <h2 class="titulo-seccion">Productos</h2>
+    <div class="rejilla">
+        {% for proyecto in proyectos %}
+            <a href="{{ path('visor_proyecto', {proyecto: proyecto.slug}) }}" class="tarjeta tarjeta-enlace">
+                <span class="tarjeta-icono">{{ i.icono('libro') }}</span>
+                <span class="tarjeta-titulo">{{ proyecto.nombre }}</span>
+                {% if proyecto.descripcion %}<span class="tarjeta-texto">{{ proyecto.descripcion }}</span>{% endif %}
+                <span class="tarjeta-pie">
+                    {{ totales[proyecto.id] ?? 0 }} documentos
+                    {{ i.icono('flecha_derecha', 'icono tarjeta-flecha') }}
+                </span>
+            </a>
+        {% else %}
+            <p class="texto-suave">Todavía no hay documentación publicada.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

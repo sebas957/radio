@@ -1,0 +1,17 @@
+{# Migas de pan: proyecto > secciones ancestras > sección indicada. Recibe "proyecto" y "seccion". #}
+{% import 'visor/_iconos.html.twig' as i %}
+{% set ancestros = [] %}
+{% set actual = seccion %}
+{% for _ in 1..10 %}
+    {% if actual %}
+        {% set ancestros = [actual]|merge(ancestros) %}
+        {% set actual = actual.padre %}
+    {% endif %}
+{% endfor %}
+<nav class="ruta" aria-label="Ubicación">
+    <a href="{{ path('visor_proyecto', {proyecto: proyecto.slug}) }}">{{ proyecto.nombre }}</a>
+    {% for s in ancestros %}
+        {{ i.icono('derecha', 'icono ruta-separador') }}
+        <a href="{{ path('visor_seccion', {proyecto: proyecto.slug, id: s.id}) }}">{{ s.titulo }}</a>
+    {% endfor %}
+</nav>

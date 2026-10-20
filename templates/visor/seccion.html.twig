@@ -1,0 +1,107 @@
+{% extends 'visor/base.html.twig' %}
+{% import 'visor/_iconos.html.twig' as i %}
+
+{% set proyecto = navegacion.proyecto %}
+
+{% block title %}{{ seccion ? seccion.titulo ~ ' - ' }}{{ proyecto.nombre }} - Semantica Docs{% endblock %}
+
+{% macro lista_documentos(documentos, proyecto) %}
+    {% import 'visor/_iconos.html.twig' as i %}
+    <ul class="lista-documentos">
+        {% for doc in documentos %}
+            <li>
+                <a href="{{ url_documento(proyecto.slug, doc.id, doc.titulo) }}">
+                    {{ i.icono('documento') }}
+                    <span>{{ doc.titulo }}</span>
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
+{% block contenido %}
+<div class="pagina">
+    {% if seccion %}
+        {% include 'visor/_ruta.html.twig' with {seccion: seccion.padre} %}
+        <header class="pagina-encabezado">
+            {% if seccion.padre is null %}<span class="encabezado-icono">{{ i.icono(seccion.nombre) }}</span>{% endif %}
+            <div>
+                <h1>{{ seccion.titulo }}</h1>
+                <p class="pagina-resumen">{{ navegacion.nodo(seccion).total }} documentos</p>
+            </div>
+        </header>
+    {% else %}
+        <header class="pagina-encabezado">
+            <div>
+                <div class="pagina-etiqueta">Documentación</div>
+                <h1>{{ proyecto.nombre }}</h1>
+                <p class="pagina-resumen">
+                    {{ proyecto.descripcion ?: 'Guías de uso de cada módulo, organizadas igual que el menú del sistema.' }}
+                    · {{ navegacion.totalDocumentos }} documentos
+                </p>
+            </div>
+        </header>
+    {% endif %}
+
+    {% if seccion is null %}
+        {# Portada del proyecto: una tarjeta por módulo #}
+        <div class="rejilla">
+            {% for nodo in nodos %}
+                <div class="tarjeta">
+                    <a href="{{ path('visor_seccion', {proyecto: proyecto.slug, id: nodo.seccion.id}) }}" class="tarjeta-cabecera">
+                        <span class="tarjeta-icono">{{ i.icono(nodo.seccion.nombre) }}</span>
+                        <span>
+                            <span class="tarjeta-titulo">{{ nodo.seccion.titulo }}</span>
+                            <span class="tarjeta-texto">{{ nodo.total }} documentos</span>
+                        </span>
+                    </a>
+                    {% if nodo.hijos is not empty %}
+                        <div class="etiquetas">
+                            {% for hijo in nodo.hijos %}
+                                <a href="{{ path('visor_seccion', {proyecto: proyecto.slug, id: hijo.seccion.id}) }}" class="chip">{{ hijo.seccion.titulo }}</a>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        {# Sección: cada subsección con sus grupos como tarjetas #}
+        {% for nodo in nodos %}
+            <section class="bloque">
+                <h2 class="titulo-seccion">
+                    <a href="{{ path('visor_seccion', {proyecto: proyecto.slug, id: nodo.seccion.id}) }}">{{ nodo.seccion.titulo }}</a>
+                    <span class="contador">{{ nodo.total }}</span>
+                </h2>
+                {% if nodo.documentos is not empty %}
+                    {{ _self.lista_documentos(nodo.documentos, proyecto) }}
+                {% endif %}
+                {% if nodo.hijos is not empty %}
+                    <div class="rejilla">
+                        {% for hijo in nodo.hijos %}
+                            <div class="tarjeta">
+                                <a href="{{ path('visor_seccion', {proyecto: proyecto.slug, id: hijo.seccion.id}) }}" class="tarjeta-titulo tarjeta-titulo-enlace">{{ hijo.seccion.titulo }}</a>
+                                {{ _self.lista_documentos(hijo.documentos, proyecto) }}
+                                {% for nieto in hijo.hijos %}
+                                    <a href="{{ path('visor_seccion', {proyecto: proyecto.slug, id: nieto.seccion.id}) }}" class="tarjeta-mas">
+                                        {{ i.icono('carpeta') }} {{ nieto.seccion.titulo }}
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </section>
+        {% endfor %}
+    {% endif %}
+
+    {% if documentos is not empty %}
+        <section class="bloque">
+            <h2 class="titulo-seccion">{{ seccion ? 'Documentos' : 'Otros documentos' }} <span class="contador">{{ documentos|length }}</span></h2>
+            <div class="tarjeta tarjeta-lista">
+                {{ _self.lista_documentos(documentos, proyecto) }}
+            </div>
+        </section>
+    {% endif %}
+</div>
+{% endblock %}

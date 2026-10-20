@@ -1,3 +1,106 @@
+/* Tema Semantica: mismos colores que holmio (plantilla2/css/tema-semantica.css). */
+:root {
+    --sem-azul-oscuro: #0d2547;
+    --sem-azul: #1976c6;
+    --sem-azul-hover: #145e9f;
+    --sem-acento: #5ab0f0;
+    --sem-fondo: #f4f6fa;
+    --sem-texto: #2b2f38;
+    --sem-texto-suave: #6b7385;
+    --sem-icono: #8a93a6;
+    --sem-borde: #d7dde8;
+    --sem-error-fondo: #fdecee;
+    --sem-error-borde: #f5c2c7;
+    --sem-error-texto: #a3172b;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
 body {
-    background-color: skyblue;
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--sem-texto);
+    background-color: var(--sem-fondo);
+}
+
+a {
+    color: var(--sem-azul);
+}
+
+a:hover {
+    color: var(--sem-azul-hover);
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 18px;
+    height: 40px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    font: inherit;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.btn-primario {
+    background-color: var(--sem-azul);
+    color: #fff;
+}
+
+.btn-primario:hover {
+    background-color: var(--sem-azul-hover);
+    color: #fff;
+}
+
+.btn-secundario {
+    background-color: #fff;
+    border-color: var(--sem-borde);
+    color: var(--sem-texto);
+}
+
+.btn-secundario:hover {
+    border-color: var(--sem-azul);
+    color: var(--sem-azul);
+}
+
+.btn-pequeno {
+    height: 30px;
+    padding: 0 12px;
+    font-size: 0.8rem;
+}
+
+.btn:focus-visible,
+.campo input:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(25, 118, 198, 0.25);
+}
+
+.suave {
+    color: var(--sem-texto-suave);
+    font-size: 0.85rem;
+}
+
+.etiqueta {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    background-color: #eef2f8;
+    color: var(--sem-texto-suave);
 }

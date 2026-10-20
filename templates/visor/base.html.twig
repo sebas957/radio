@@ -1,0 +1,81 @@
+{% extends 'base.html.twig' %}
+{% import 'visor/_iconos.html.twig' as i %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/visor.css') }}">
+{% endblock %}
+
+{% block body %}
+{% set proyecto_actual = navegacion is defined and navegacion ? navegacion.proyecto : null %}
+<header class="barra">
+    <div class="barra-izquierda">
+        {% if proyecto_actual %}
+            <label for="menu-movil" class="barra-menu" aria-label="Abrir menú">{{ i.icono('menu') }}</label>
+        {% endif %}
+        <a href="{{ path('inicio') }}" class="barra-marca">
+            <img src="{{ asset('images/semantica/logo.png') }}" alt="Semantica Digital">
+            <span class="barra-docs">Docs</span>
+        </a>
+        {% if proyecto_actual %}
+            <span class="barra-separador" aria-hidden="true"></span>
+            <a href="{{ path('visor_proyecto', {proyecto: proyecto_actual.slug}) }}" class="barra-proyecto">{{ proyecto_actual.nombre }}</a>
+        {% endif %}
+    </div>
+
+    <form action="{{ path('visor_buscar') }}" method="get" class="barra-buscar" role="search"
+          data-controller="atajo-busqueda" data-action="keydown@window->atajo-busqueda#tecla">
+        {{ i.icono('buscar') }}
+        <input type="search" name="q" value="{{ texto is defined ? texto }}" placeholder="Buscar en la documentación"
+               aria-label="Buscar en la documentación" data-atajo-busqueda-target="campo">
+        <kbd data-atajo-busqueda-target="tecla">Ctrl K</kbd>
+        {% if proyecto_actual %}<input type="hidden" name="proyecto" value="{{ proyecto_actual.slug }}">{% endif %}
+    </form>
+
+    <nav class="barra-derecha" aria-label="Cuenta">
+        {% if app.user %}
+            {% if is_granted('ROLE_EDITOR') %}
+                <a href="{{ path('admin_documento_lista') }}" class="barra-enlace">Administrar</a>
+            {% endif %}
+            <span class="barra-usuario" title="{{ app.user.nombre }}">{{ app.user.nombre|first|upper }}</span>
+            <a href="{{ path('logout') }}" class="barra-enlace">Salir</a>
+        {% else %}
+            <a href="{{ path('login') }}" class="btn btn-secundario btn-pequeno">Ingresar</a>
+        {% endif %}
+    </nav>
+</header>
+
+{% if proyecto_actual %}
+    <input type="checkbox" id="menu-movil" class="menu-movil-check" hidden>
+    <div class="layout">
+        <aside class="lateral" aria-label="Documentación de {{ proyecto_actual.nombre }}"
+               data-controller="menu-lateral">
+            <div class="lateral-filtro">
+                {{ i.icono('filtro') }}
+                <input type="search" placeholder="Filtrar documentos" aria-label="Filtrar documentos"
+                       data-menu-lateral-target="filtro" data-action="input->menu-lateral#filtrar keydown->menu-lateral#limpiar">
+            </div>
+            <nav class="lateral-arbol">
+                {% include 'visor/_menu.html.twig' %}
+                <p class="lateral-vacio" data-menu-lateral-target="vacio" hidden>Ningún documento coincide.</p>
+            </nav>
+        </aside>
+        <label for="menu-movil" class="velo" aria-hidden="true"></label>
+        <div class="principal">
+            <main>
+                {% block contenido %}{% endblock %}
+            </main>
+            {{ block('pie') }}
+        </div>
+    </div>
+{% else %}
+    <main>
+        {{ block('contenido') }}
+    </main>
+    {% block pie %}
+        <footer class="pie">
+            <span>© {{ 'now'|date('Y') }} Semantica Digital</span>
+            <a href="https://semantica.com.co" target="_blank" rel="noopener">semantica.com.co</a>
+        </footer>
+    {% endblock %}
+{% endif %}
+{% endblock %}

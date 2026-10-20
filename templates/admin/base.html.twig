@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Administrador - Semantica Docs{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/admin.css') }}">
+{% endblock %}
+
+{% block body %}
+<header class="admin-barra">
+    <a href="{{ path('admin_documento_lista') }}" class="admin-marca">
+        <img src="{{ asset('images/semantica/logo-claro.png') }}" alt="Semantica Digital">
+        <span>Docs · Administrador</span>
+    </a>
+    <nav class="admin-nav">
+        <a href="{{ path('inicio') }}">Visor</a>
+        <a href="{{ path('admin_documento_lista') }}" class="{{ app.request.attributes.get('_route') starts with 'admin_documento' ? 'activo' }}">Documentos</a>
+    </nav>
+    <div class="admin-usuario">
+        <span>{{ app.user.nombre }}</span>
+        <a href="{{ path('logout') }}">Cerrar sesión</a>
+    </div>
+</header>
+
+<main class="admin-contenido">
+    {% for mensaje in app.flashes('exito') %}
+        <div class="aviso aviso-exito" role="status">{{ mensaje }}</div>
+    {% endfor %}
+
+    {% block contenido %}{% endblock %}
+</main>
+{% endblock %}

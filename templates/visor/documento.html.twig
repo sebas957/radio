@@ -1,0 +1,84 @@
+{% extends 'visor/base.html.twig' %}
+{% import 'visor/_iconos.html.twig' as i %}
+
+{% set proyecto = documento.proyecto %}
+{% set con_indice = contenido.indice|length > 1 %}
+
+{% block title %}{{ documento.titulo }} - {{ proyecto.nombre }} - Semantica Docs{% endblock %}
+
+{% block contenido %}
+<div class="documento {{ con_indice ? 'documento-con-indice' }}">
+    <article class="documento-cuerpo">
+        {% include 'visor/_ruta.html.twig' with {seccion: documento.seccion} %}
+
+        <header class="documento-encabezado">
+            <h1>{{ documento.titulo }}</h1>
+            {% if is_granted('ROLE_EDITOR') %}
+                <a href="{{ path('admin_documento_editar', {id: documento.id}) }}" class="btn btn-secundario btn-pequeno">
+                    {{ i.icono('editar') }} Editar
+                </a>
+            {% endif %}
+        </header>
+
+        <div class="documento-meta">
+            {% if not documento.publicado %}<span class="etiqueta etiqueta-borrador">Borrador</span>{% endif %}
+            <span>{{ i.icono('calendario') }} Actualizado el {{ documento.fechaActualizacion|format_date('long', locale='es') }}</span>
+            {% if documento.modelo %}
+                <span title="Modelo del ERP">{{ i.icono('codigo') }} <code>{{ documento.modelo }}</code></span>
+            {% endif %}
+        </div>
+
+        {% if contenido.html is empty %}
+            <div class="documento-vacio">
+                {{ i.icono('documento') }}
+                <p>Este documento todavía no tiene contenido.</p>
+            </div>
+        {% else %}
+            <div class="markdown">{{ contenido.html|raw }}</div>
+        {% endif %}
+
+        {% if documento.video %}
+            {% set embebido = video_embebido(documento.video) %}
+            <section class="documento-video">
+                <h2>{{ i.icono('video') }} Video</h2>
+                {% if embebido %}
+                    <div class="video-marco">
+                        <iframe src="{{ embebido }}" title="Video: {{ documento.titulo }}" loading="lazy"
+                                allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                {% else %}
+                    <a href="{{ documento.video }}" target="_blank" rel="noopener">Ver video</a>
+                {% endif %}
+            </section>
+        {% endif %}
+
+        {% if vecinos.anterior or vecinos.siguiente %}
+            <nav class="vecinos" aria-label="Documentos anterior y siguiente">
+                {% if vecinos.anterior %}
+                    <a href="{{ url_documento(proyecto.slug, vecinos.anterior.id, vecinos.anterior.titulo) }}" class="vecino">
+                        <span class="vecino-etiqueta">{{ i.icono('flecha_izquierda') }} Anterior</span>
+                        <span class="vecino-titulo">{{ vecinos.anterior.titulo }}</span>
+                    </a>
+                {% else %}<span></span>{% endif %}
+                {% if vecinos.siguiente %}
+                    <a href="{{ url_documento(proyecto.slug, vecinos.siguiente.id, vecinos.siguiente.titulo) }}" class="vecino vecino-siguiente">
+                        <span class="vecino-etiqueta">Siguiente {{ i.icono('flecha_derecha') }}</span>
+                        <span class="vecino-titulo">{{ vecinos.siguiente.titulo }}</span>
+                    </a>
+                {% endif %}
+            </nav>
+        {% endif %}
+    </article>
+
+    {% if con_indice %}
+        <aside class="indice" aria-label="En esta página" data-controller="indice">
+            <div class="indice-titulo">En esta página</div>
+            <ul>
+                {% for titulo in contenido.indice %}
+                    <li class="nivel-{{ titulo.nivel }}"><a href="#{{ titulo.id }}" data-indice-target="enlace">{{ titulo.texto }}</a></li>
+                {% endfor %}
+            </ul>
+        </aside>
+    {% endif %}
+</div>
+{% endblock %}

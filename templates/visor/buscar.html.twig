@@ -1,0 +1,106 @@
+{% extends 'visor/base.html.twig' %}
+{% import 'visor/_iconos.html.twig' as i %}
+
+{% block title %}{{ texto ? texto ~ ' - ' }}Buscar - Semantica Docs{% endblock %}
+
+{% set hay_busqueda = texto|length >= 2 %}
+
+{% block contenido %}
+<section class="busqueda-cabecera">
+    <div class="busqueda-cabecera-interior">
+        <div class="pagina-etiqueta">Buscar</div>
+        <h1>{{ hay_busqueda ? 'Resultados de búsqueda' : 'Buscar en la documentación' }}</h1>
+        <form action="{{ path('visor_buscar') }}" method="get" class="buscar-grande" role="search">
+            {{ i.icono('buscar') }}
+            <input type="search" name="q" value="{{ texto }}" placeholder="¿Qué necesita saber? Ej. crear una guía, facturación electrónica..."
+                   aria-label="Texto a buscar" {{ not hay_busqueda ? 'autofocus' }}>
+            {% if proyecto %}<input type="hidden" name="proyecto" value="{{ proyecto.slug }}">{% endif %}
+            <button type="submit" class="btn btn-primario">Buscar</button>
+        </form>
+    </div>
+</section>
+
+<div class="busqueda-cuerpo">
+    {% if hay_busqueda %}
+        <aside class="busqueda-filtros" aria-label="Filtrar por proyecto">
+            <div class="filtros-titulo">Proyecto</div>
+            <ul>
+                <li>
+                    <a href="{{ path('visor_buscar', {q: texto}) }}" class="filtro {{ proyecto is null ? 'activo' }}">
+                        <span>Todos</span>
+                        <span class="contador">{{ total }}</span>
+                    </a>
+                </li>
+                {% for p in proyectos|filter(p => por_proyecto[p.id] is defined) %}
+                    <li>
+                        <a href="{{ path('visor_buscar', {q: texto, proyecto: p.slug}) }}" class="filtro {{ proyecto and proyecto.id == p.id ? 'activo' }}">
+                            <span>{{ p.nombre }}</span>
+                            <span class="contador">{{ por_proyecto[p.id] }}</span>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </aside>
+
+        <section class="busqueda-resultados">
+            <p class="busqueda-resumen">
+                {% if resultados is empty %}
+                    Sin resultados para <strong>«{{ texto }}»</strong>{% if proyecto %} en {{ proyecto.nombre }}{% endif %}
+                {% else %}
+                    {{ resultados|length }} resultado{{ resultados|length != 1 ? 's' }} para <strong>«{{ texto }}»</strong>{% if proyecto %} en {{ proyecto.nombre }}{% endif %}
+                    {% if total == limite %}<span class="texto-suave"> · se muestran los {{ limite }} más relevantes</span>{% endif %}
+                {% endif %}
+            </p>
+
+            {% if resultados is not empty %}
+                <ol class="resultados">
+                    {% for r in resultados %}
+                        {% set p = proyectos[r.proyecto_id] %}
+                        {% set s = r.seccion_id ? secciones[r.seccion_id] ?? null : null %}
+                        <li>
+                            <a href="{{ url_documento(p.slug, r.id, r.titulo) }}" class="resultado">
+                                <span class="resultado-icono">{{ i.icono('documento') }}</span>
+                                <span class="resultado-cuerpo">
+                                    <span class="resultado-titulo">{{ r.titulo }}</span>
+                                    <span class="resultado-ruta">
+                                        {{ p.nombre }}
+                                        {% if s %}
+                                            {% for parte in s.getRuta('|')|split('|') %}
+                                                {{ i.icono('derecha', 'icono resultado-separador') }}{{ parte }}
+                                            {% endfor %}
+                                        {% endif %}
+                                    </span>
+                                    {% if r.fragmento|trim is not empty %}
+                                        <span class="resultado-fragmento">{{ r.fragmento|fragmento_busqueda }}</span>
+                                    {% endif %}
+                                </span>
+                                {{ i.icono('flecha_derecha', 'icono resultado-flecha') }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ol>
+            {% else %}
+                <div class="documento-vacio">
+                    {{ i.icono('buscar') }}
+                    <p><strong>No encontramos documentos con esas palabras.</strong></p>
+                    <p>Revise la ortografía, use palabras más generales o
+                        {% if proyecto %}<a href="{{ path('visor_buscar', {q: texto}) }}">busque en todos los proyectos</a>{% else %}pruebe con un sinónimo{% endif %}.</p>
+                </div>
+            {% endif %}
+        </section>
+    {% else %}
+        <div class="busqueda-inicio">
+            {% if texto is not empty %}
+                <p class="texto-suave">Escriba al menos 2 caracteres.</p>
+            {% endif %}
+            <div class="filtros-titulo">Búsquedas frecuentes</div>
+            <div class="etiquetas-sugeridas">
+                {% for sugerencia in ['guía', 'factura', 'nómina electrónica', 'tercero', 'cierre', 'pedido'] %}
+                    <a href="{{ path('visor_buscar', {q: sugerencia}) }}" class="chip">{{ i.icono('buscar') }} {{ sugerencia }}</a>
+                {% endfor %}
+            </div>
+            <p class="texto-suave consejo">Consejo: no importan las tildes ni las mayúsculas, y puede buscar por el nombre del modelo del ERP (ej. <code>TteGuia</code>).</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,353 @@
+/* Administrador de documentación */
+.admin-barra {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    height: 60px;
+    padding: 0 24px;
+    background: linear-gradient(145deg, #0d2547 0%, #163c6b 100%);
+    color: #fff;
+}
+
+.admin-marca {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.admin-marca:hover {
+    color: #fff;
+}
+
+.admin-marca img {
+    height: 30px;
+}
+
+.admin-marca span {
+    color: var(--sem-acento);
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.admin-nav {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+}
+
+.admin-nav a {
+    color: rgba(255, 255, 255, 0.75);
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+}
+
+.admin-nav a:hover,
+.admin-nav a.activo {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.admin-usuario {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 0.875rem;
+}
+
+.admin-usuario a {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.admin-contenido {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 16px 48px;
+}
+
+.encabezado {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.encabezado h1 {
+    color: var(--sem-azul-oscuro);
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+.volver {
+    font-size: 0.85rem;
+    text-decoration: none;
+}
+
+/* Avisos */
+.aviso {
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+}
+
+.aviso-exito {
+    background-color: #e8f5ee;
+    border: 1px solid #b7dfc6;
+    color: #1d6b3d;
+}
+
+/* Filtros y tabla */
+.filtros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.filtros input[type="search"] {
+    flex: 1;
+    min-width: 220px;
+}
+
+select,
+input[type="text"],
+input[type="search"],
+input[type="url"],
+input[type="number"],
+textarea {
+    height: 40px;
+    padding: 0 10px;
+    border: 1px solid var(--sem-borde);
+    border-radius: 4px;
+    background-color: #fff;
+    font: inherit;
+    color: var(--sem-texto);
+}
+
+textarea {
+    height: auto;
+    padding: 10px;
+    width: 100%;
+}
+
+select:focus,
+input:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--sem-azul);
+    box-shadow: 0 0 0 0.15rem rgba(25, 118, 198, 0.2);
+}
+
+.tabla-contenedor {
+    overflow-x: auto;
+    background-color: #fff;
+    border: 1px solid var(--sem-borde);
+    border-radius: 6px;
+}
+
+.tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.tabla th {
+    background-color: #eef2f8;
+    color: var(--sem-azul-oscuro);
+    font-weight: 600;
+    text-align: left;
+    padding: 8px 10px;
+    white-space: nowrap;
+}
+
+.tabla td {
+    padding: 6px 10px;
+    border-top: 1px solid var(--sem-borde);
+    vertical-align: middle;
+}
+
+.tabla tbody tr:hover {
+    background-color: #e8f0fb;
+}
+
+.tabla .numero {
+    text-align: right;
+    width: 1%;
+}
+
+.tabla .acciones {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.tabla .vacio {
+    text-align: center;
+    color: var(--sem-texto-suave);
+    padding: 24px;
+}
+
+.etiqueta-exito {
+    background-color: #e8f5ee;
+    color: #1d6b3d;
+}
+
+.etiqueta-alerta {
+    background-color: #fff4e0;
+    color: #8a5300;
+    margin-left: 6px;
+}
+
+.btn-bloque {
+    width: 100%;
+}
+
+.btn-peligro {
+    background-color: #fff;
+    border-color: var(--sem-error-borde);
+    color: var(--sem-error-texto);
+}
+
+.btn-peligro:hover {
+    background-color: var(--sem-error-fondo);
+}
+
+.paginacion {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 16px;
+    font-size: 0.875rem;
+    color: var(--sem-texto-suave);
+}
+
+/* Formulario del documento */
+.documento-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 24px;
+    align-items: start;
+}
+
+.documento-propiedades {
+    position: sticky;
+    top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.panel {
+    background-color: #fff;
+    border: 1px solid var(--sem-borde);
+    border-radius: 6px;
+    padding: 16px;
+}
+
+.panel h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--sem-azul-oscuro);
+    margin: 0 0 12px;
+}
+
+.formulario-documento > .documento-layout div:has(> label),
+.campo-form {
+    margin-bottom: 14px;
+}
+
+.formulario-documento label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.formulario-documento select,
+.formulario-documento input[type="text"],
+.formulario-documento input[type="url"],
+.formulario-documento input[type="number"] {
+    width: 100%;
+}
+
+.formulario-documento .documento-editor input[type="text"] {
+    height: 44px;
+    font-size: 1.1rem;
+}
+
+.formulario-documento div:has(> input[type="checkbox"]) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.formulario-documento div:has(> input[type="checkbox"]) label {
+    margin: 0;
+}
+
+.formulario-documento input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--sem-azul);
+}
+
+.formulario-documento .help-text {
+    font-size: 0.75rem;
+    color: var(--sem-texto-suave);
+    margin-top: 2px;
+}
+
+.formulario-documento ul {
+    list-style: none;
+    padding: 0;
+    margin: 4px 0 0;
+    color: var(--sem-error-texto);
+    font-size: 0.8rem;
+}
+
+.zona-eliminar {
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 1px solid var(--sem-borde);
+}
+
+/* EasyMDE con los colores del tema */
+.EasyMDEContainer .CodeMirror {
+    border-color: var(--sem-borde);
+    font-size: 0.95rem;
+}
+
+.EasyMDEContainer .editor-toolbar {
+    border-color: var(--sem-borde);
+    background-color: #fff;
+}
+
+.editor-preview,
+.editor-preview-side {
+    background-color: #fff;
+}
+
+.vista-previa-error {
+    color: var(--sem-error-texto);
+}
+
+@media (max-width: 991px) {
+    .documento-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .documento-propiedades {
+        position: static;
+    }
+
+    .admin-marca span,
+    .admin-usuario span {
+        display: none;
+    }
+}

@@ -1,0 +1,212 @@
+/* Login: mismo diseño que holmio templates/seguridad/login2.html.twig */
+.login {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Panel de marca (izquierda) */
+.login-marca {
+    flex: 1 1 55%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 48px 56px;
+    color: #fff;
+    background: linear-gradient(145deg, #0d2547 0%, #163c6b 55%, #1d5f9e 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.login-marca::after {
+    content: "";
+    position: absolute;
+    right: -160px;
+    bottom: -160px;
+    width: 480px;
+    height: 480px;
+    border-radius: 50%;
+    border: 70px solid rgba(255, 255, 255, 0.05);
+}
+
+.login-marca-logo img {
+    height: 52px;
+}
+
+.login-producto {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--sem-acento);
+    margin-bottom: 12px;
+}
+
+.login-marca h1 {
+    color: #fff;
+    font-size: 2.6rem;
+    font-weight: 300;
+    line-height: 1.3;
+    max-width: 480px;
+    margin: 0 0 16px;
+}
+
+.login-marca p {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 1rem;
+    max-width: 440px;
+    margin: 0;
+}
+
+.login-marca-pie {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.55);
+    position: relative;
+    z-index: 1;
+}
+
+.login-marca-pie a {
+    color: #fff;
+}
+
+/* Formulario (derecha) */
+.login-form {
+    flex: 1 1 45%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+    background-color: var(--sem-fondo);
+}
+
+.login-card {
+    width: 100%;
+    max-width: 380px;
+}
+
+.login-card .logo-completo {
+    height: 56px;
+    margin-bottom: 32px;
+}
+
+.login-card h2 {
+    color: var(--sem-azul-oscuro);
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin: 0 0 4px;
+}
+
+.login-card .subtitulo {
+    color: var(--sem-texto-suave);
+    margin-bottom: 28px;
+}
+
+.campo {
+    margin-bottom: 18px;
+}
+
+.campo label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+.campo-control {
+    display: flex;
+    align-items: stretch;
+    background-color: #fff;
+    border: 1px solid var(--sem-borde);
+    border-radius: 4px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.campo-control:focus-within {
+    border-color: var(--sem-azul);
+    box-shadow: 0 0 0 0.15rem rgba(25, 118, 198, 0.2);
+}
+
+.campo-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    color: var(--sem-icono);
+    border-right: 1px solid var(--sem-borde);
+}
+
+.campo-icono svg {
+    width: 16px;
+    height: 16px;
+}
+
+.campo input {
+    flex: 1;
+    min-width: 0;
+    height: 44px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 0 4px 4px 0;
+    background: transparent;
+    font: inherit;
+    color: var(--sem-texto);
+}
+
+.campo input:focus-visible {
+    box-shadow: none;
+}
+
+.recordarme {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    color: var(--sem-texto-suave);
+    margin-bottom: 24px;
+    cursor: pointer;
+}
+
+.recordarme input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--sem-azul);
+}
+
+.btn-ingresar {
+    width: 100%;
+    height: 46px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.login-error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--sem-error-fondo);
+    border: 1px solid var(--sem-error-borde);
+    color: var(--sem-error-texto);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 20px;
+    font-size: 0.875rem;
+}
+
+.login-error svg {
+    flex: none;
+    width: 16px;
+    height: 16px;
+}
+
+.login-volver {
+    display: inline-block;
+    margin-top: 24px;
+    font-size: 0.875rem;
+    text-decoration: none;
+}
+
+@media (max-width: 991px) {
+    .login-marca {
+        display: none;
+    }
+}

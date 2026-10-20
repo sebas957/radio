@@ -1,0 +1,66 @@
+{#
+  Menú lateral del proyecto. Usa del contexto, si existen:
+  - seccion: la sección que se está viendo
+  - documento: el documento que se está leyendo
+  Se abren la sección activa y todos sus ancestros. El primer nivel lleva el icono del módulo.
+#}
+{% import 'visor/_iconos.html.twig' as i %}
+
+{% macro nodos(nodos, proyecto, abiertas, documento_activo, seccion_activa_id, nivel) %}
+    {% import 'visor/_iconos.html.twig' as i %}
+    <ul class="arbol-nivel-{{ nivel }}">
+        {% for nodo in nodos %}
+            {% set id = nodo.seccion.id %}
+            <li>
+                <details {{ abiertas[id] is defined ? 'open' }}>
+                    <summary class="{{ seccion_activa_id == id ? 'activo' }}">
+                        {% if nivel == 1 %}{{ i.icono(nodo.seccion.nombre, 'icono arbol-icono') }}{% endif %}
+                        <span>{{ nodo.seccion.titulo }}</span>
+                        {{ i.icono('derecha', 'icono arbol-flecha') }}
+                    </summary>
+                    {{ _self.nodos(nodo.hijos, proyecto, abiertas, documento_activo, seccion_activa_id, nivel + 1) }}
+                    {% if nodo.documentos is not empty %}
+                        <ul class="arbol-documentos">
+                            {% for doc in nodo.documentos %}
+                                <li>
+                                    <a href="{{ url_documento(proyecto.slug, doc.id, doc.titulo) }}"
+                                       class="documento {{ documento_activo == doc.id ? 'activo' }}"
+                                       {{ documento_activo == doc.id ? 'aria-current="page"' }}>{{ doc.titulo }}</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </details>
+            </li>
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
+{% set seccion_activa = seccion ?? (documento is defined ? documento.seccion : null) %}
+{% set documento_activo = documento is defined ? documento.id : null %}
+{% set proyecto = navegacion.proyecto %}
+
+{{ _self.nodos(navegacion.raices, proyecto, navegacion.abiertas(seccion_activa), documento_activo, seccion_activa ? seccion_activa.id : null, 1) }}
+
+{% if navegacion.sinSeccion is not empty %}
+    <ul class="arbol-nivel-1">
+        <li>
+            <details {{ documento_activo and seccion_activa is null ? 'open' }}>
+                <summary>
+                    {{ i.icono('carpeta', 'icono arbol-icono') }}
+                    <span>Otros documentos</span>
+                    {{ i.icono('derecha', 'icono arbol-flecha') }}
+                </summary>
+                <ul class="arbol-documentos">
+                    {% for doc in navegacion.sinSeccion %}
+                        <li>
+                            <a href="{{ url_documento(proyecto.slug, doc.id, doc.titulo) }}"
+                               class="documento {{ documento_activo == doc.id ? 'activo' }}"
+                               {{ documento_activo == doc.id ? 'aria-current="page"' }}>{{ doc.titulo }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </details>
+        </li>
+    </ul>
+{% endif %}

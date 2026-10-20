@@ -1,0 +1,76 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block contenido %}
+<div class="encabezado">
+    <h1>Documentos</h1>
+    <a href="{{ path('admin_documento_nuevo') }}" class="btn btn-primario">Nuevo documento</a>
+</div>
+
+<form method="get" class="filtros">
+    <select name="proyecto" aria-label="Proyecto">
+        <option value="">Todos los proyectos</option>
+        {% for p in proyectos %}
+            <option value="{{ p.id }}" {{ proyecto and proyecto.id == p.id ? 'selected' }}>{{ p.nombre }}</option>
+        {% endfor %}
+    </select>
+    <input type="search" name="q" value="{{ busqueda }}" placeholder="Buscar por título, modelo o número" aria-label="Buscar">
+    <button type="submit" class="btn btn-secundario">Filtrar</button>
+</form>
+
+<div class="tabla-contenedor">
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th class="numero">Id</th>
+                <th>Título</th>
+                <th>Sección</th>
+                <th>Modelo</th>
+                <th>Estado</th>
+                <th>Actualizado</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for documento in documentos %}
+                <tr>
+                    <td class="numero">{{ documento.id }}</td>
+                    <td>
+                        <a href="{{ path('admin_documento_editar', {id: documento.id}) }}">{{ documento.titulo }}</a>
+                        {% if documento.contenido is empty %}<span class="etiqueta etiqueta-alerta">Vacío</span>{% endif %}
+                    </td>
+                    <td class="suave">{{ documento.proyecto.nombre }}{% if documento.seccion %} ⇾ {{ documento.seccion.ruta }}{% endif %}</td>
+                    <td class="suave">{{ documento.modelo }}</td>
+                    <td>
+                        {% if documento.publicado %}
+                            <span class="etiqueta etiqueta-exito">Publicado</span>
+                        {% else %}
+                            <span class="etiqueta">Borrador</span>
+                        {% endif %}
+                    </td>
+                    <td class="suave">{{ documento.fechaActualizacion|date('Y-m-d H:i') }}</td>
+                    <td class="acciones">
+                        <a href="{{ path('admin_documento_editar', {id: documento.id}) }}" class="btn btn-secundario btn-pequeno">Editar</a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" class="vacio">No hay documentos{{ busqueda or proyecto ? ' con ese filtro' }}.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if paginas > 1 %}
+    <nav class="paginacion" aria-label="Paginación">
+        {% set parametros = app.request.query.all|merge({pagina: null}) %}
+        {% if pagina > 1 %}
+            <a href="{{ path('admin_documento_lista', parametros|merge({pagina: pagina - 1})) }}" class="btn btn-secundario btn-pequeno">Anterior</a>
+        {% endif %}
+        <span>Página {{ pagina }} de {{ paginas }} · {{ documentos|length }} documentos</span>
+        {% if pagina < paginas %}
+            <a href="{{ path('admin_documento_lista', parametros|merge({pagina: pagina + 1})) }}" class="btn btn-secundario btn-pequeno">Siguiente</a>
+        {% endif %}
+    </nav>
+{% endif %}
+{% endblock %}
