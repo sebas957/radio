@@ -42,7 +42,7 @@ class Proyecto
 
     /** @var Collection<int, Seccion> */
     #[ORM\OneToMany(targetEntity: Seccion::class, mappedBy: 'proyecto')]
-    #[ORM\OrderBy(['orden' => 'ASC'])]
+    #[ORM\OrderBy(['orden' => \SortDirection::Ascending])]
     private Collection $secciones;
 
     public function __construct()

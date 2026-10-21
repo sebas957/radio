@@ -33,12 +33,12 @@ class Seccion
 
     /** @var Collection<int, Seccion> */
     #[ORM\OneToMany(targetEntity: Seccion::class, mappedBy: 'padre')]
-    #[ORM\OrderBy(['orden' => 'ASC'])]
+    #[ORM\OrderBy(['orden' => \SortDirection::Ascending])]
     private Collection $hijos;
 
     /** @var Collection<int, Documento> */
     #[ORM\OneToMany(targetEntity: Documento::class, mappedBy: 'seccion')]
-    #[ORM\OrderBy(['orden' => 'ASC', 'titulo' => 'ASC'])]
+    #[ORM\OrderBy(['orden' => \SortDirection::Ascending, 'titulo' => \SortDirection::Ascending])]
     private Collection $documentos;
 
     /** Identificador en minúsculas, usado en las URLs (ej. "logistica"). */
