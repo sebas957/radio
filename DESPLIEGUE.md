@@ -2,7 +2,7 @@
 
 Guía para instalar y actualizar el proyecto en un servidor de producción. El proyecto se despliega con el nombre del repositorio, **`radio`**: carpeta `/var/www/html/radio`, sitio de Apache `radio`, logs `radio_*.log`. La base de datos es un **PostgreSQL administrado** (servicio en la nube), no un PostgreSQL instalado en el servidor.
 
-En los ejemplos, `radio.semantica.com.co` es el dominio: reemplácelo por el real.
+El dominio es **`documentacion.semanticaerp.com`**.
 
 ## Arquitectura
 
@@ -94,15 +94,21 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO ra
     APP_ENV=prod
     APP_SECRET=
     APP_SHARE_DIR=var/share
-    DEFAULT_URI=https://radio.semantica.com.co
+    DEFAULT_URI=https://documentacion.semanticaerp.com
     DATABASE_URL="postgresql://radio_app:CLAVE_APP@HOST:PUERTO/bdradio?serverVersion=16&charset=utf8&sslmode=require"
+    ```
+
+    Reemplace `CLAVE_APP`, `HOST` y `PUERTO` por los datos reales del proveedor (el puerto suele ser `5432`) antes del paso 3: con los textos de ejemplo `composer install` falla en `cache:clear` con `Malformed database connection URL`. Si la clave tiene caracteres como `@ : / ? # & % +`, póngala codificada:
+
+    ```bash
+    php -r 'echo rawurlencode($argv[1]), "\n";' 'la-clave-real'
     ```
 
     ```bash
     chmod 640 .env
     ```
 
-3. **Instalar dependencias de producción.** Composer ejecuta solo `cache:clear`, `assets:install` e `importmap:install`, que descarga EasyMDE y las demás librerías JS.
+3. **Instalar dependencias de producción**, con su usuario y no como root (con root, `vendor/` y `var/` quedan de root y PHP-FPM no puede escribir la caché). Sin `--no-dev` se instalarían phpunit, maker-bundle y el web profiler. Composer ejecuta solo `cache:clear`, `assets:install` e `importmap:install`, que descarga EasyMDE y las demás librerías JS.
 
     ```bash
     composer install --no-dev --optimize-autoloader --classmap-authoritative
@@ -158,7 +164,7 @@ Como los proyectos viven dentro de `/var/www/html`, que es el `DocumentRoot` de 
 
 ```apache
 <VirtualHost *:80>
-    ServerName radio.semantica.com.co
+    ServerName documentacion.semanticaerp.com
     DocumentRoot /var/www/html/radio/public
 
     <Directory /var/www/html/radio/public>
@@ -184,7 +190,7 @@ Como los proyectos viven dentro de `/var/www/html`, que es el `DocumentRoot` de 
 ```bash
 sudo a2ensite radio && sudo a2dissite 000-default
 sudo apachectl configtest && sudo systemctl reload apache2
-sudo certbot --apache -d radio.semantica.com.co   # HTTPS y redirección desde http
+sudo certbot --apache -d documentacion.semanticaerp.com   # HTTPS y redirección desde http
 ```
 
 **PHP-FPM**, en `/etc/php/8.3/fpm/pool.d/www.conf`. El límite de procesos es la primera defensa contra la saturación: lo que exceda espera en cola en vez de ahogar la base.
@@ -253,9 +259,9 @@ sudo ufw allow OpenSSH && sudo ufw allow 'Apache Full' && sudo ufw enable
 **Lo que no debe verse:**
 
 ```bash
-curl -s -o /dev/null -w "%{http_code}\n" https://radio.semantica.com.co/.env        # 403 o 404
-curl -s -o /dev/null -w "%{http_code}\n" https://radio.semantica.com.co/_profiler   # 404
-curl -sI https://radio.semantica.com.co/ | grep -i x-debug-token                    # sin salida
+curl -s -o /dev/null -w "%{http_code}\n" https://documentacion.semanticaerp.com/.env        # 403 o 404
+curl -s -o /dev/null -w "%{http_code}\n" https://documentacion.semanticaerp.com/_profiler   # 404
+curl -sI https://documentacion.semanticaerp.com/ | grep -i x-debug-token                    # sin salida
 ```
 
 ## 6. Migración de datos desde carbono
@@ -293,7 +299,7 @@ SELECT count(*) FROM documento d JOIN seccion s ON s.id = d.seccion_id WHERE s.p
 SELECT (SELECT count(*) FROM proyecto) proyectos, (SELECT count(*) FROM seccion) secciones, (SELECT count(*) FROM documento) documentos;
 ```
 
-Y abrir `https://radio.semantica.com.co/documento/191` (Recogida) para confirmar que redirige al documento correcto.
+Y abrir `https://documentacion.semanticaerp.com/documento/191` (Recogida) para confirmar que redirige al documento correcto.
 
 ## 7. Actualizar a una nueva versión
 
@@ -337,7 +343,7 @@ Guarde una copia del `.env` de producción (o al menos `APP_SECRET` y las claves
 - [ ] `http://IP-DEL-SERVIDOR/radio/.env` no descarga el archivo (ningún sitio publica `/var/www/html`)
 - [ ] Apache publica solo `/var/www/html/radio/public`; `000-default` deshabilitado
 - [ ] HTTPS activo y `http://` redirige a `https://`
-- [ ] Cabeceras de seguridad presentes (`curl -sI https://radio.semantica.com.co/`)
+- [ ] Cabeceras de seguridad presentes (`curl -sI https://documentacion.semanticaerp.com/`)
 - [ ] PostgreSQL acepta conexiones solo desde la IP del servidor y con TLS
 - [ ] `doctrine:migrations:status` muestra todas las migraciones aplicadas
 - [ ] La búsqueda de "guia" encuentra "Guía"
