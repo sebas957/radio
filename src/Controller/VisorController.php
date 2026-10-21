@@ -115,6 +115,8 @@ class VisorController extends AbstractController
      * Enlace corto por número, el mismo que usaba la ayuda de holmio con los ids de carbono.
      */
     #[Route('/documento/{id}', name: 'visor_documento_id', requirements: ['id' => '\d+'], methods: ['GET'])]
+    // URL del sitio anterior (documentacion.semantica.com.co), por si quedan enlaces guardados.
+    #[Route('/apps/documentacion/{id}', name: 'visor_documento_carbono', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function documentoPorId(Documento $documento, DocumentacionExtension $documentacion): Response
     {
         $this->verificarVisible($documento);
