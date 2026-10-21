@@ -6,6 +6,8 @@ Es el visor y el administrador de la documentación. Reemplaza la documentación
 
 El diseño sigue la línea visual de Holmio (Semantica ERP).
 
+Para instalarlo en un servidor de producción, vea **[DESPLIEGUE.md](DESPLIEGUE.md)**.
+
 ## Tecnologías
 
 - PHP 8.2+ y Symfony 7.4
@@ -14,7 +16,7 @@ El diseño sigue la línea visual de Holmio (Semantica ERP).
 
 ## Requisitos
 
-- PHP 8.2 o superior con las extensiones `pdo_pgsql`, `ctype` e `iconv`
+- PHP 8.2 o superior con las extensiones `ctype`, `iconv`, `dom`, `xml`, `intl`, `mbstring` y `pdo_pgsql`
 - Composer 2
 - PostgreSQL 16 (local o con Docker)
 
@@ -28,26 +30,25 @@ Cree el archivo `.env` en la raíz del proyecto. No se versiona porque lleva las
 
 ```dotenv
 APP_ENV=dev
-APP_SECRET=          # en producción: un valor aleatorio, ej. el resultado de `openssl rand -hex 32`
+APP_SECRET=          # se completa con: bin/console app:generar-secret --guardar
 APP_SHARE_DIR=var/share
 DEFAULT_URI=http://localhost
 DATABASE_URL="postgresql://usuario:clave@127.0.0.1:5432/semantica_docs?serverVersion=16&charset=utf8"
-MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0
-MAILER_DSN=null://null
-# Solo para app:importar-carbono
-# CARBONO_DATABASE_URL="mysql://usuario:clave@127.0.0.1:3306/bdcarbono"
 ```
 
-En producción use `APP_ENV=prod` y un `APP_SECRET` propio, y después ejecute `composer dump-env prod`.
+Genere el `APP_SECRET` (64 caracteres aleatorios; nunca reutilice el de otro entorno):
+
+```bash
+bin/console app:generar-secret --guardar
+```
 
 Si prefiere Docker, `docker compose up -d database` levanta PostgreSQL con los valores por defecto de `compose.yaml`.
 
-Cree la base de datos, las tablas y lo que necesita la búsqueda (extensión `unaccent` y función `f_unaccent`, que Doctrine no administra):
+Cree la base de datos y aplique las migraciones. La migración inicial crea las tablas vacías, la extensión `unaccent` y la función `f_unaccent` que usa la búsqueda:
 
 ```bash
 bin/console doctrine:database:create
-bin/console doctrine:schema:update --force
-bin/console app:configurar-busqueda
+bin/console doctrine:migrations:migrate
 ```
 
 Cree el primer usuario (la contraseña se pide por consola):
@@ -104,47 +105,47 @@ El contenido se guarda en la base de datos (columna `contenido`), ya no en archi
 
 `/admin/documento` lista, busca (título, modelo o número), crea, edita y elimina documentos. El contenido se escribe en Markdown con [EasyMDE](https://github.com/Ionaru/easy-markdown-editor). La vista previa la genera el servidor con el mismo renderizador del visor (`App\Markdown\Renderizador`, Markdown de GitHub: tablas, listas de tareas, enlaces automáticos).
 
-El Markdown puede traer HTML (los `.md` de teneso son HTML de su editor visual). Por eso todo el HTML generado pasa por `symfony/html-sanitizer` con una lista blanca: se conservan las etiquetas de formato y se quitan scripts, eventos (`on*`), estilos en línea, formularios, iframes y enlaces `javascript:`. Esto aplica al visor, a la vista previa y al contenido importado.
+El Markdown puede traer HTML (los `.md` de teneso son HTML de su editor visual). Por eso todo el HTML generado pasa por `symfony/html-sanitizer` con una lista blanca: se conservan las etiquetas de formato y se quitan scripts, eventos (`on*`), estilos en línea, formularios, iframes y enlaces `javascript:`. Esto aplica al visor y a la vista previa.
 
-## Migración desde carbono y teneso
+## Migración de datos desde carbono
 
-`app:importar-carbono` copia proyectos y documentos de la base de carbono, y arma las secciones con el menú de teneso (`data/importacion/teneso-menu.json`, extraído de `teneso/src/app/_metronic/layout/components/aside/menu.ts`).
+Se hace una sola vez y de forma manual (no hay comando de importación). Reglas que deben respetarse:
 
-```bash
-# Contenido desde la columna HTML de carbono, convertido a Markdown
-bin/console app:importar-carbono --origen="mysql://usuario:clave@127.0.0.1:3306/bdcarbono"
+- **Conservar los ids** de `documentacion.codigo_documentacion_pk` en `documento.id`: holmio enlaza la ayuda por ese número (`/documento/{id}`).
+- Los ids de `proyecto` también se conservan.
+- El contenido va en `documento.contenido` en Markdown. Puede incluir HTML (los `.md` de teneso lo son); el sanitizador lo limpia al mostrarlo.
+- Las secciones replican el menú de teneso (`teneso/src/app/_metronic/layout/components/aside/menu.ts`): aplicación > menú > grupo, y cada documento en la sección de su grupo.
+- Al insertar ids explícitos en PostgreSQL hay que reiniciar las secuencias, o el siguiente documento creado desde el administrador chocará:
 
-# Contenido desde los .md que editaba teneso (copia de /documentacion del servidor)
-bin/console app:importar-carbono --origen=... --directorio=/ruta/a/documentacion
-
-# Contenido descargado de la API de carbono
-bin/console app:importar-carbono --origen=... --api=https://semantica.com.co/api/documentacion/archivo
+```sql
+SELECT setval(pg_get_serial_sequence('documento', 'id'), (SELECT MAX(id) FROM documento) + 1, false);
+SELECT setval(pg_get_serial_sequence('proyecto', 'id'), (SELECT MAX(id) FROM proyecto) + 1, false);
+SELECT setval(pg_get_serial_sequence('seccion', 'id'), (SELECT MAX(id) FROM seccion) + 1, false);
 ```
-
-Para cada documento el contenido se toma del archivo `.md`, si no existe de la API, y si tampoco de la columna HTML. `--origen` también puede ir en la variable `CARBONO_DATABASE_URL`. Si ya hay documentos, se exige `--reemplazar`, que borra proyectos, secciones y documentos antes de importar. Antes de borrar avisa cuántos documentos se perderán (incluidos los editados en radio) y pide confirmación (`s/N`, por defecto no). En modo no interactivo (cron, scripts) solo continúa si además se pasa `--forzar`. Todo corre en una transacción.
 
 ## Estructura
 
 | Ruta | Contenido |
 |---|---|
-| `src/Controller/` | Controladores (`SeguridadController`: login y logout; `InicioController`: página de inicio) |
+| `src/Controller/` | Controladores (`VisorController`: visor público y búsqueda; `SeguridadController`: login y logout) |
 | `src/Controller/Admin/` | Administrador de documentación |
 | `src/Form/` | Formularios |
-| `src/Markdown/`, `src/Twig/` | Renderizador de Markdown y filtro Twig `markdown` |
+| `src/Markdown/` | Renderizador de Markdown y sanitizador de HTML |
+| `src/Twig/` | Funciones Twig del visor (URL de documentos, videos, fragmentos de búsqueda) |
+| `src/Documentacion/` | Árbol de navegación del visor |
 | `src/Entity/`, `src/Repository/` | Entidades y repositorios de Doctrine |
 | `src/Security/` | Reglas de autenticación |
-| `src/Command/` | Comandos de consola |
+| `src/Command/` | Comandos de consola (`app:crear-usuario`, `app:generar-secret`) |
+| `migrations/` | Migraciones de Doctrine |
 | `templates/` | Plantillas Twig |
 | `assets/styles/` | CSS. Los colores del tema están en variables `--sem-*` dentro de `app.css` |
 | `assets/controllers/` | Controladores Stimulus (`editor_markdown_controller.js`: editor EasyMDE) |
 | `assets/images/semantica/` | Logos de Semantica Digital |
-| `data/importacion/` | Datos para la migración desde teneso |
 
 ## Convenciones
 
 - Los nombres de negocio van en español (entidades, rutas, variables, carpetas de plantillas). El código de framework e infraestructura va en inglés.
-- El proyecto no usa migraciones. Después de cambiar una entidad, revise el SQL con `bin/console doctrine:schema:update --dump-sql` y aplíquelo con `--force`. No use `--complete`: borraría tablas que Doctrine no conoce.
-- `app:configurar-busqueda` se puede ejecutar las veces que se quiera; hay que correrlo en cada base nueva.
+- Los cambios de esquema se hacen con migraciones: después de cambiar una entidad, `bin/console doctrine:migrations:diff` genera la migración; se revisa, se prueba y se sube junto con el cambio. No use `doctrine:schema:update` en ninguna base compartida.
 
 ## Pruebas
 
@@ -152,16 +153,17 @@ Para cada documento el contenido se toma del archivo `.md`, si no existe de la A
 bin/phpunit
 ```
 
-Cubren el renderizador de Markdown (19 vectores de XSS y phishing, conservación del formato legítimo y del HTML de teneso, documentos de más de 20.000 caracteres e índice de títulos), las funciones Twig del visor, la validación de que la sección de un documento sea de su mismo proyecto, la confirmación de `--reemplazar` del importador y `app:configurar-busqueda`. Ninguna prueba usa la base de datos.
+Cubren el renderizador de Markdown (19 vectores de XSS y phishing, conservación del formato legítimo y del HTML de teneso, documentos de más de 20.000 caracteres e índice de títulos), las funciones Twig del visor, la validación de que la sección de un documento sea de su mismo proyecto y `app:generar-secret` (que nunca toca el `.env` real). Ninguna prueba usa la base de datos.
 
 ## Comandos útiles
 
 ```bash
 bin/console cache:clear
 bin/console debug:router
-bin/console doctrine:schema:update --dump-sql
-bin/console doctrine:schema:update --force
-bin/console app:configurar-busqueda
+bin/console doctrine:migrations:status
+bin/console doctrine:migrations:diff
+bin/console doctrine:migrations:migrate
+bin/console app:generar-secret
 bin/console lint:twig templates
 bin/phpunit
 ```
