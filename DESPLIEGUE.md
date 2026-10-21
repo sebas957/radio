@@ -1,6 +1,6 @@
 # Despliegue de Semantica Docs (`radio`)
 
-Guía para instalar y actualizar el proyecto en un servidor de producción. El proyecto se despliega con el nombre del repositorio, **`radio`**: carpeta `/var/www/radio`, sitio de Apache `radio`, logs `radio_*.log`. La base de datos es un **PostgreSQL administrado** (servicio en la nube), no un PostgreSQL instalado en el servidor.
+Guía para instalar y actualizar el proyecto en un servidor de producción. El proyecto se despliega con el nombre del repositorio, **`radio`**: carpeta `/var/www/html/radio`, sitio de Apache `radio`, logs `radio_*.log`. La base de datos es un **PostgreSQL administrado** (servicio en la nube), no un PostgreSQL instalado en el servidor.
 
 En los ejemplos, `radio.semantica.com.co` es el dominio: reemplácelo por el real.
 
@@ -83,9 +83,9 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO ra
 1. **Descargar el código**
 
     ```bash
-    sudo git clone https://github.com/sebas957/radio.git /var/www/radio
-    sudo chown -R $USER:www-data /var/www/radio
-    cd /var/www/radio
+    sudo git clone https://github.com/sebas957/radio.git /var/www/html/radio
+    sudo chown -R $USER:www-data /var/www/html/radio
+    cd /var/www/html/radio
     ```
 
 2. **Crear el `.env`.** No está en el repositorio. `DATABASE_URL` usa `radio_app` y `sslmode=require`; si el proveedor entrega un certificado de CA, agregue `&sslrootcert=/ruta/ca.crt` y use `sslmode=verify-full`.
@@ -150,16 +150,18 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO ra
 
 ## 4. Configurar Apache y PHP-FPM
 
-Apache publica **únicamente** `/var/www/radio/public`. Publicar la raíz del proyecto expone `.env` (con la clave de la base), `var/log` y el código.
+Apache publica **únicamente** `/var/www/html/radio/public`. Publicar la raíz del proyecto expone `.env` (con la clave de la base), `var/log` y el código.
+
+Como los proyectos viven dentro de `/var/www/html`, que es el `DocumentRoot` de `000-default`, ningún sitio de Apache debe publicar `/var/www/html` completo: con `000-default` activo, `http://IP-DEL-SERVIDOR/radio/.env` descarga el `.env`. Por eso se deshabilita `000-default` y cada proyecto tiene su propio sitio apuntando a su carpeta `public/`.
 
 **Sitio** `/etc/apache2/sites-available/radio.conf`:
 
 ```apache
 <VirtualHost *:80>
     ServerName radio.semantica.com.co
-    DocumentRoot /var/www/radio/public
+    DocumentRoot /var/www/html/radio/public
 
-    <Directory /var/www/radio/public>
+    <Directory /var/www/html/radio/public>
         AllowOverride None
         Require all granted
         FallbackResource /index.php
@@ -298,7 +300,7 @@ Y abrir `https://radio.semantica.com.co/documento/191` (Recogida) para confirmar
 Antes de subir cambios a `main`, `bin/phpunit` debe pasar en desarrollo (las pruebas no se instalan en producción).
 
 1. Confirmar que el proveedor tiene un respaldo reciente, o crear uno manual (sección 8).
-2. `cd /var/www/radio && git pull origin main`
+2. `cd /var/www/html/radio && git pull origin main`
 3. `composer install --no-dev --optimize-autoloader --classmap-authoritative && composer dump-env prod`
 4. `php bin/console asset-map:compile`
 5. Migraciones nuevas con el rol dueño: revisar con `DATABASE_URL="$OWNER_URL" php bin/console doctrine:migrations:status` y aplicar con `DATABASE_URL="$OWNER_URL" php bin/console doctrine:migrations:migrate --no-interaction`
@@ -332,7 +334,8 @@ Guarde una copia del `.env` de producción (o al menos `APP_SECRET` y las claves
 - [ ] `.env` con `APP_ENV=prod`, `APP_SECRET` generado con `app:generar-secret` y `DATABASE_URL` con `radio_app` y `sslmode=require`
 - [ ] `composer dump-env prod` ejecutado (`.env.local.php` existe)
 - [ ] `/.env` y `/_profiler` responden 403 o 404; no aparece `X-Debug-Token`
-- [ ] Apache publica solo `/var/www/radio/public`; `000-default` deshabilitado
+- [ ] `http://IP-DEL-SERVIDOR/radio/.env` no descarga el archivo (ningún sitio publica `/var/www/html`)
+- [ ] Apache publica solo `/var/www/html/radio/public`; `000-default` deshabilitado
 - [ ] HTTPS activo y `http://` redirige a `https://`
 - [ ] Cabeceras de seguridad presentes (`curl -sI https://radio.semantica.com.co/`)
 - [ ] PostgreSQL acepta conexiones solo desde la IP del servidor y con TLS
