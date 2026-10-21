@@ -18,7 +18,8 @@
     </nav>
     <div class="admin-usuario">
         <span>{{ app.user.nombre }}</span>
-        <a href="{{ path('logout') }}">Cerrar sesión</a>
+        {# Sin Turbo: su precarga al pasar el mouse cerraría la sesión sin hacer clic. #}
+        <a href="{{ path('logout') }}" data-turbo="false" data-turbo-prefetch="false">Cerrar sesión</a>
     </div>
 </header>
 

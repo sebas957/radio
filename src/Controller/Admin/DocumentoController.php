@@ -25,9 +25,11 @@ class DocumentoController extends AbstractController
     #[Route('', name: 'admin_documento_lista', methods: ['GET'])]
     public function lista(Request $request, DocumentoRepository $documentoRepository, ProyectoRepository $proyectoRepository): Response
     {
-        $proyecto = $request->query->getInt('proyecto') ? $proyectoRepository->find($request->query->getInt('proyecto')) : null;
+        // getInt() responde 400 con un valor vacío ("Todos los proyectos" envía proyecto=), así que se convierte a mano.
+        $proyectoId = (int) $request->query->getString('proyecto');
+        $proyecto = $proyectoId > 0 ? $proyectoRepository->find($proyectoId) : null;
         $busqueda = $request->query->getString('q');
-        $pagina = max(1, $request->query->getInt('pagina', 1));
+        $pagina = max(1, (int) $request->query->getString('pagina', '1'));
         $documentos = $documentoRepository->listaAdmin($proyecto, $busqueda, $pagina, self::POR_PAGINA);
 
         return $this->render('admin/documento/lista.html.twig', [

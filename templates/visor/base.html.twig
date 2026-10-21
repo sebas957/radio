@@ -37,7 +37,8 @@
                 <a href="{{ path('admin_documento_lista') }}" class="barra-enlace">Administrar</a>
             {% endif %}
             <span class="barra-usuario" title="{{ app.user.nombre }}">{{ app.user.nombre|first|upper }}</span>
-            <a href="{{ path('logout') }}" class="barra-enlace">Salir</a>
+            {# Sin Turbo: su precarga al pasar el mouse cerraría la sesión sin hacer clic. #}
+            <a href="{{ path('logout') }}" class="barra-enlace" data-turbo="false" data-turbo-prefetch="false">Salir</a>
         {% else %}
             <a href="{{ path('login') }}" class="btn btn-secundario btn-pequeno">Ingresar</a>
         {% endif %}
